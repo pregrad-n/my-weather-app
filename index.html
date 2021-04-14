@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Weather App</title>
+    <meta charset="UTF-8" />
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous" />
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="mb-3 mt-5">
+            <div class="col-5 col-centered">
+                <form id="search-form">
+                    <input type="text" placeholder="🔍 Enter city" class="form-control" autocomplete="off"
+                        autofocus="on" id="search-text-input" />
+                    <input type="submit" value="Search" />
+                </form>
+                <button>
+                    Current Location
+                </button>
+            </div>
+        </div>
+        <div class="row justify-content-center mb-5">
+            <div class="col-5 col-centered text-center custom-border p-3 weather-temperature">
+                It is <span class="currentTemp">2 </span> °C in
+                <ul>
+                    <li>
+                        <h2 id="city">Maribor </h2>
+                    </li>
+                    <li>Time: <span id="time">time</span></li>
+                    <li>Humidity: <span id="humidity"></span>%</li>
+                    <li>Wind: <span id="wind"></span>km/h</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row justify-content-center mb-5">
+            <div class="col-1 col-centered text-center custom-border p-2">
+                <span class="snowflake">❄️</span>
+            </div>
+        </div>
+        <div class="row text-center">
+            <div class="col custom-border mr-2">
+                <div class="bold">Mon</div>
+                <div class="snowflake">❄️</div>
+                <div><span class="tempConvert">-8 °C</span></div>
+            </div>
+            <div class="col custom-border mr-2">
+                <div class="bold">Tue</div>
+                <div class="snowflake">❄️</div>
+                <div><span class="tempConvert">-3 °C</span></div>
+            </div>
+            <div class="col custom-border mr-2">
+                <div class="bold">Wed</div>
+                <div class="snowflake">❄️</div>
+                <div><span class="tempConvert">2 °C</span></div>
+            </div>
+            <div class="col custom-border mr-2">
+                <div class="bold">Thu</div>
+                <div class="snowflake">❄️</div>
+                <div><span class="tempConvert">0 °C</span></div>
+            </div>
+            <div class="col custom-border mr-2">
+                <div class="bold">Fri</div>
+                <div class="snowflake">❄️</div>
+                <div><span class="tempConvert">1 °C</span></div>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+
+    </div>
+    </div>
+    <script>
+        let apiKey = "6758f92f1ce708c469b52c414379efc0";
+        let apiUrl = "https://api.openweathermap.org/data/2.5/";
+
+        let button = document.querySelector("button");
+        button.addEventListener("click", getCurrentPosition);
+
+        let now = new Date();
+        let h3 = document.querySelector("h3");
+        let days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        let day = days[now.getDay()];
+        let hour = now.getHours();
+        let minutes = now.getMinutes();
+        let date = now.getDate();
+        let months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        let month = months[now.getMonth()];
+        let year = now.getFullYear();
+        document.querySelector("#time").innerHTML = `${day}, ${hour}:${minutes} `;
+
+        let form = document.querySelector("#search-form");
+        form.addEventListener("submit", search);
+
+        const elements = document.getElementsByClassName("tempConvert");
+        Array.from(elements).forEach(function (element) {
+
+            element.addEventListener('click', toggleTemp);
+        });
+
+        function showPosition(position) {
+            let h2 = document.querySelector("h2");
+            h2.innerHTML = `Your Latitude is ${position.coords.latitude} and your Longitude is ${position.coords.longitude}`;
+
+        }
+        function getCurrentPosition() {
+            navigator.geolocation.getCurrentPosition(function (position) {
+                axios.get(`${apiUrl}/weather?appid=${apiKey}&lat=${position.coords.latitude}&lon=${position.coords.longitude}&units=metric`).then(showTemperature);
+            });
+
+        }
+
+
+
+
+        function search(event) {
+            event.preventDefault();
+            let searchInput = document.querySelector("#search-text-input");
+
+            let h2 = document.querySelector("h2");
+            h2.innerHTML = `${searchInput.value}`;
+            axios.get(`${apiUrl}/weather?appid=${apiKey}&q=${searchInput.value}&units=metric`).then(showTemperature);
+        }
+
+
+        function showTemperature(response) {
+            let temperature = Math.round(response.data.main.temp);
+            let currentTemp = document.getElementsByClassName("currentTemp")[0];
+            currentTemp.innerHTML = temperature;
+            document.getElementById("humidity").innerHTML = response.data.main.humidity;
+            document.getElementById("wind").innerHTML = response.data.wind.speed;
+            document.getElementById("city").innerHTML = response.data.name;
+
+        }
+
+
+        let defaultTempMetric = "C";
+
+        function toggleTemp() {
+
+            if (defaultTempMetric === "C") {
+                defaultTempMetric = "F"
+            } else {
+                defaultTempMetric = "C"
+            }
+
+            function getTemp(currentTmp) {
+
+                let decimal = 2;
+
+                if (defaultTempMetric === "C") {
+
+                    currentTmp = (currentTmp - 32.00) / 1.8000;
+
+                    decimal = 0;
+                } else {
+
+                    currentTmp = currentTmp * 1.8000 + 32.00;
+
+                    decimal = 2;
+                }
+
+                return currentTmp.toFixed(decimal);
+            }
+
+            const elements = document.getElementsByClassName("tempConvert");
+            Array.from(elements).forEach(function (element) {
+
+                currentTmp = element.innerHTML.split(' ', 1)[0];
+
+                element.innerHTML = getTemp(currentTmp) + ' &#176' + defaultTempMetric;
+            });
+        }
+
+
+
+    </script>
+</body>
+
+</html>
